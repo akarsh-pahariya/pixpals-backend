@@ -13,6 +13,7 @@ const globalErrorHandler = require('./controllers/errorController');
 
 const app = express();
 
+app.use(cors());
 app.use(helmet());
 
 const limiter = rateLimit({
@@ -34,7 +35,6 @@ app.use(hpp());
 // };
 // app.use(cors(corsOptions));
 
-app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
