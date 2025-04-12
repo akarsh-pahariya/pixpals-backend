@@ -1,0 +1,195 @@
+style.
+  /* Base styles */
+  body {
+    background-color: #ffffff;
+    font-family: system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Container styles */
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #ffffff;
+  }
+
+  .main {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Header styles */
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+    padding: 24px;
+    background: #0C0C0C;
+    border-radius: 12px;
+  }
+
+  .brand-title {
+    color: #ffffff;
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.5px;
+  }
+
+  .brand-subtitle {
+    color: #9CA3AF;
+    font-size: 16px;
+    margin: 8px 0 0 0;
+  }
+
+  /* Welcome Content Styles */
+  .welcome-content {
+    color: #1F2937;
+  }
+
+  .greeting {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1F2937;
+    margin-bottom: 16px;
+  }
+
+  .welcome-message {
+    font-size: 18px;
+    color: #374151;
+    margin-bottom: 24px;
+  }
+
+  .feature-section {
+    margin: 24px 0;
+  }
+
+  .section-title {
+    font-weight: 600;
+    color: #1F2937;
+    margin-bottom: 16px;
+  }
+
+  .feature-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .feature-list li {
+    color: #374151;
+    padding: 8px 0 8px 24px;
+    position: relative;
+  }
+
+  .feature-list li:before {
+    content: "•";
+    color: #4C1D95;
+    position: absolute;
+    left: 0;
+  }
+
+  /* Button styles */
+  .btn {
+    margin: 24px 0;
+  }
+
+  .btn table td {
+    background-color: #4C1D95;
+    border-radius: 8px;
+  }
+
+  .btn a {
+    background-color: #4C1D95;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(76, 29, 149, 0.2);
+    color: white;
+    padding: 16px 32px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    min-width: 200px;
+  }
+
+  .btn-primary table td:hover {
+    background-color: #5B21B6;
+  }
+
+  .btn-primary a:hover {
+    background-color: #5B21B6;
+  }
+
+  /* Footer styles */
+  .footer {
+    margin-top: 32px;
+    text-align: center;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 24px;
+  }
+
+  .social-links {
+    margin-bottom: 20px;
+  }
+
+  .social-links a {
+    color: #4C1D95;
+    text-decoration: none;
+    margin: 0 12px;
+    font-weight: 500;
+  }
+
+  .social-links a:hover {
+    color: #5B21B6;
+  }
+
+  .footer-info {
+    color: #6B7280;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .signature {
+    color: #374151;
+    margin: 24px 0 8px 0;
+  }
+
+  .team-signature {
+    color: #4C1D95;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  /* Responsive styles */
+  @media only screen and (max-width: 620px) {
+    .main {
+      padding: 24px;
+    }
+
+    .brand-title {
+      font-size: 28px;
+    }
+
+    .brand-subtitle {
+      font-size: 14px;
+    }
+
+    .greeting {
+      font-size: 20px;
+    }
+
+    .welcome-message {
+      font-size: 16px;
+    }
+
+    .btn a {
+      padding: 14px 28px;
+    }
+  }
