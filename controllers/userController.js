@@ -16,6 +16,9 @@ const updateUser = async (req, res, next) => {
 
     let updateData = { name, email, username };
 
+    const user = await User.findById(userId);
+    if (user.authProvider === 'google') delete updateData.email;
+
     if (req.file) {
       const uniqueName = `${Date.now()}-${uuidv4()}.jpeg`;
       const outputPath = path.join(
@@ -97,6 +100,13 @@ const changePassword = async (req, res, next) => {
   try {
     const { currentPassword, newPassword, confirmPassword } = req.body;
     const user = await User.findById(req.user._id);
+    if (user.authProvider === 'google')
+      return next(
+        new AppError(
+          'The user is already registered using google, so you cant change his password',
+          401
+        )
+      );
 
     if (!(await user.verifyPassword(currentPassword, user.password))) {
       return next(new AppError('Incorrect old password', 401));

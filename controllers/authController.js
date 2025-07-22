@@ -1,9 +1,11 @@
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 const { Email } = require('../utils/email');
-const { log } = require('console');
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const createToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET);
@@ -18,7 +20,16 @@ const login = async (req, res, next) => {
 
     const user = await User.findOne({ username });
     if (!user) {
-      return next(new AppError('Incorrect username or password', 401));
+      return next(
+        new AppError('No account exists with the provided username', 401)
+      );
+    } else if (user.authProvider === 'google') {
+      return next(
+        new AppError(
+          'This account is already linked with google, Try logging using google',
+          401
+        )
+      );
     }
 
     if (!(await user.verifyPassword(password, user.password))) {
@@ -72,6 +83,13 @@ const forgotPassword = async (req, res, next) => {
   try {
     const { username, email } = req.body;
     const user = await User.findOne({ email, username });
+
+    if (user.authProvider === 'google')
+      return next(
+        new AppError(
+          'This account is already logged in using google, you cant reset its password'
+        )
+      );
 
     if (!user)
       return next(
@@ -151,4 +169,71 @@ const verifyUser = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, verifyUser, forgotPassword, resetPassword };
+const googleLogin = async (req, res, next) => {
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: req.body.token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const existingUser = await User.findOne({ email: payload.email });
+    let user;
+
+    if (!existingUser) {
+      const truncatedGivenName = payload.given_name.substring(0, 6);
+      const username = truncatedGivenName.toLowerCase() + payload.sub;
+      const url = `${process.env.FRONTEND_URL}/user`;
+
+      user = await User.create({
+        name: payload.name,
+        username,
+        email: payload.email,
+        authProvider: 'google',
+        googleId: payload.sub,
+        profilePhoto: {
+          url: payload.picture,
+          publicId: '',
+        },
+      });
+      await new Email(user, url).sendWelcome();
+    } else if (existingUser.authProvider === 'local') {
+      existingUser.authProvider = 'both';
+      existingUser.googleId = payload.sub;
+
+      if (existingUser.profilePhoto.publicId === 'ebtyc00ucwiurvnemsbm') {
+        existingUser.profilePhoto.publicId = '';
+        existingUser.profilePhoto.url = payload.picture;
+      }
+      await existingUser.save();
+      user = existingUser;
+    } else {
+      user = existingUser;
+    }
+
+    const token = createToken(user.id);
+    res.cookie('jwt', token, {
+      secure: true,
+      httpOnly: true,
+      sameSite: 'None',
+    });
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        user,
+      },
+    });
+  } catch (error) {
+    next(new AppError(error.message, 400));
+  }
+};
+
+module.exports = {
+  register,
+  login,
+  verifyUser,
+  googleLogin,
+  forgotPassword,
+  resetPassword,
+};

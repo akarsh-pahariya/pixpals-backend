@@ -5,6 +5,7 @@ const {
   verifyUser,
   forgotPassword,
   resetPassword,
+  googleLogin,
 } = require('../controllers/authController');
 const { protect } = require('../middlewares/authMiddleware');
 const { upload } = require('../middlewares/multerMiddleware');
@@ -27,6 +28,7 @@ Router.route('/')
     });
   });
 Router.route('/login').post(login);
+Router.route('/google-login').post(googleLogin);
 Router.route('/register').post(register);
 Router.route('/changePassword').post(protect, changePassword);
 Router.route('/forgot-password').post(forgotPassword);

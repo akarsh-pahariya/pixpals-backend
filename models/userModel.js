@@ -16,19 +16,57 @@ const userSchema = new mongoose.Schema(
       unique: [true, 'Username is already taken'],
       required: [true, 'Username is required'],
       minLength: [3, 'Username must be at least 3 characters long'],
-      maxLength: [20, 'Username must be at most 20 characters long'],
+      maxLength: [27, 'Username must be at most 20 characters long'],
+      trim: true,
+      lowercase: true,
+    },
+    authProvider: {
+      type: String,
+      enum: ['local', 'google', 'both'],
+      required: true,
+      default: 'local',
+    },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
+      required: [
+        function () {
+          return this.authProvider === 'google' || this.authProvider === 'both';
+        },
+        'Google ID is required for Google login',
+      ],
     },
     password: {
       type: String,
-      required: [true, 'Password is required'],
+      required: [
+        function () {
+          return this.authProvider === 'local' || this.authProvider === 'both';
+        },
+        'Password is required',
+      ],
       minLength: [8, 'Password must be at least 8 characters long'],
-      maxLength: [20, 'Password must be at most 20 characters long'],
+      validate: {
+        validator: function (val) {
+          if (this.isModified('password')) {
+            return val.length <= 20;
+          }
+          return true;
+        },
+        message: 'Password must be at most 20 characters long',
+      },
     },
     confirmPassword: {
       type: 'String',
-      required: [true, 'Confirm Password is a required field'],
+      required: [
+        function () {
+          return this.authProvider === 'local';
+        },
+        'Confirm Password is a required field',
+      ],
       validate: {
         validator: function (confirmPassword) {
+          if (this.authProvider !== 'local') return true;
           return this.password === confirmPassword;
         },
         message: 'Password and Confirm password do not match',
@@ -45,6 +83,8 @@ const userSchema = new mongoose.Schema(
         message: 'Please provide a valid email',
       },
       maxLength: [50, 'Email must be at most 50 characters long'],
+      trim: true,
+      lowercase: true,
     },
     profilePhoto: {
       url: {
@@ -73,6 +113,7 @@ userSchema.methods.toJSON = function () {
 };
 
 userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 10);
   this.confirmPassword = undefined;
   next();
