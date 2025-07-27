@@ -58,25 +58,38 @@ const handleImageUpload = async (req, res, next) => {
 const getGroupImages = async (req, res, next) => {
   try {
     const { groupId } = req.params;
-    const page = parseInt(req.query.page) || 1;
-    const limit = 100;
+    const cursor = req.query.cursor;
+
+    const limit = 9;
+    let query = { groupId };
+
+    if (cursor) {
+      query.createdAt = { $lt: new Date(cursor) };
+    }
 
     const totalImages = await Image.countDocuments({ groupId });
-    const groupImages = await Image.find({ groupId })
+
+    const groupImages = await Image.find(query)
       .populate('userId', 'name')
       .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit));
-    const totalPages = Math.ceil(totalImages / limit);
+      .limit(parseInt(limit) + 1);
+
+    const hasMore = groupImages.length > limit;
+    const imagesToReturn = hasMore ? groupImages.slice(0, limit) : groupImages;
+
+    const nextCursor =
+      imagesToReturn.length > 0
+        ? imagesToReturn[imagesToReturn.length - 1].createdAt
+        : null;
 
     res.status(200).json({
       status: 'success',
       data: {
-        totalPages,
-        totalPages,
-        results: groupImages.length,
-        page: parseInt(page),
-        images: groupImages,
+        images: imagesToReturn,
+        nextCursor,
+        hasMore,
+        results: imagesToReturn.length,
+        totalImages,
       },
     });
   } catch (error) {
