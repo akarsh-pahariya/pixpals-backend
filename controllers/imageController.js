@@ -104,7 +104,7 @@ const getImagesPostedByUser = async (req, res, next) => {
     const { groupId } = req.params;
     const userId = req.user._id;
     const page = parseInt(req.query.page) || 1;
-    const limit = 100;
+    const limit = 9;
 
     let filter = { groupId };
     if (req.groupMembership.role !== 'admin') {

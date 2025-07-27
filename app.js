@@ -41,6 +41,11 @@ app.use('/api/v1/user', userRouter);
 app.use('/api/v1/group', groupRouter);
 app.use('/api/v1/invite', invitationRouter);
 
+// For not letting the servers of the render sleep due to inactivity
+app.get('/api/ping', (req, res) => {
+  res.status(200).send('pong');
+});
+
 app.use(globalErrorHandler);
 
 module.exports = app;
