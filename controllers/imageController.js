@@ -5,6 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 const AppError = require('../utils/appError');
 const { uploadGroupImage, deleteImages } = require('../utils/cloudinary');
 const Image = require('../models/ImageModel');
+const GroupSocketEvents = require('../sockets/groupSocket');
 
 const handleImageUpload = async (req, res, next) => {
   try {
@@ -45,6 +46,11 @@ const handleImageUpload = async (req, res, next) => {
         return databaseResponse;
       })
     );
+    await GroupSocketEvents.emitImagesUploaded(
+      groupId,
+      processedImages,
+      req.user
+    );
 
     res.status(200).json({
       status: 'success',
@@ -60,7 +66,7 @@ const getGroupImages = async (req, res, next) => {
     const { groupId } = req.params;
     const cursor = req.query.cursor;
 
-    const limit = 9;
+    const limit = 12;
     let query = { groupId };
 
     if (cursor) {
@@ -164,6 +170,8 @@ const deleteImagesPostedByUser = async (req, res, next) => {
       deleteImages(publicIds),
       Image.deleteMany({ _id: { $in: idsToDelete } }),
     ]);
+
+    await GroupSocketEvents.emitImagesDeleted(groupId, idsToDelete, req.user);
 
     res.status(200).json({
       status: 'success',
