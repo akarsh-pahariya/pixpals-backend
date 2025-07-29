@@ -7,6 +7,7 @@ const Image = require('../models/ImageModel');
 const GroupInvitation = require('../models/groupInvitationModel');
 const { deleteImages } = require('../utils/cloudinary');
 const { default: mongoose } = require('mongoose');
+const GroupSocketEvents = require('../sockets/groupSocket');
 
 const createGroup = async (req, res, next) => {
   try {
@@ -141,6 +142,8 @@ const deleteGroup = async (req, res, next) => {
 
     await Promise.all([deleteImages(publicIds), Image.deleteMany({ groupId })]);
 
+    GroupSocketEvents.emitGroupDelete(groupId, req.user);
+
     res.status(200).json({
       status: 'success',
       message: 'Group and all associated data deleted successfully',
@@ -167,6 +170,7 @@ const leaveGroup = async (req, res, next) => {
     if (!userImages.length) {
       await UserGroupMembership.findOneAndDelete({ userId, groupId });
 
+      GroupSocketEvents.emitGroupLeft(groupId, req.user);
       return res.status(200).json({
         status: 'success',
         message: 'Successfully left the group',
@@ -180,6 +184,8 @@ const leaveGroup = async (req, res, next) => {
       Image.deleteMany({ userId, groupId }),
       deleteImages(publicIds),
     ]);
+
+    GroupSocketEvents.emitGroupLeft(groupId, req.user);
 
     res.status(200).json({
       status: 'success',

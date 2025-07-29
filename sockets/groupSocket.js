@@ -53,6 +53,28 @@ class GroupSocketEvents {
       throw new AppError('Socket emit failed', 500);
     }
   }
+
+  static emitGroupLeft(groupId, user) {
+    try {
+      const io = getIO();
+      io.to(groupId).emit('groupLeft', {
+        message: `${user.username} has left the group`,
+      });
+    } catch (error) {
+      throw new AppError('Socket emit failed', 500);
+    }
+  }
+
+  static emitGroupDelete(groupId, user) {
+    try {
+      const io = getIO();
+      io.to(groupId).emit('groupDelete', {
+        message: `Group deleted by ${user.name}`,
+      });
+    } catch (error) {
+      throw new AppError('Socket emit failed', 500);
+    }
+  }
 }
 
 module.exports = GroupSocketEvents;
